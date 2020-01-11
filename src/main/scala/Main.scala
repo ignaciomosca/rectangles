@@ -1,58 +1,65 @@
-import scala.io.StdIn
+import java.io.IOException
+
+import zio._
+import zio.console._
 
 object Main extends App {
 
-  def makeRectangle() = {
+  private def inputNumber(number: String) = ZIO
+    .effect(number.toInt)
+    .filterOrFail(_>=0)(new IOException("Invalid input"))
 
-    println("Define the x component for the upper left side of your triangle")
-    val upperLeftX = StdIn.readInt()
+  private def inputOption(number: String): ZIO[Any, NumberFormatException, Int] = ZIO
+    .effect(number.toInt)
+    .refineToOrDie[NumberFormatException]
 
-    println("Define the y component for the upper left side of your triangle")
-    val upperLeftY = StdIn.readInt()
+  private def getInput(message: String):ZIO[Console, IOException, Int] = (for {
+    _ <- putStrLn(message)
+    input <- getStrLn.orDie
+    number <- inputNumber(input)
+  } yield number) orElse (putStrLn("Invalid Input") *> getInput(message))
 
-    println("Define the x component for the lower right side of your triangle")
-    val lowerRightX = StdIn.readInt()
+  private def inputMenuOption(message: String):ZIO[Console, IOException, Int] = (for {
+    _ <- putStrLn(message)
+    input <- getStrLn.orDie
+    number <- inputOption(input)
+  } yield number) orElse (putStrLn("Invalid Option") *> getInput(message))
 
-    println("Define the y component for the lower right side of your triangle")
-    val lowerRightY = StdIn.readInt()
+  private def displayMenu(r1: Rectangle, r2: Rectangle) = (for {
+    _ <- putStrLn("---Menu---")
+    _ <- putStrLn("1 - Rectangle 1 Contains Rectangle 2")
+    _ <- putStrLn("2 - Rectangle 2 Contains Rectangle 1")
+    _ <- putStrLn("3 - Rectangle 1 and Rectangle 2 Intersect")
+    _ <- putStrLn("4 - Rectangles 1 and 2 are Adjacent")
+    option <- inputMenuOption("Press any other number to Exit")
+    _ <- proccessOption(option, r1, r2)
+  } yield())
 
-    Rectangle(Point(upperLeftX, upperLeftY), Point(lowerRightX, lowerRightY))
+  private def makeRectangle():ZIO[Console, IOException, Rectangle] =(for {
+    upperLeftX <- getInput("Define the x component for the upper left side of your triangle")
+    upperLeftY <- getInput("Define the y component for the upper left side of your triangle")
+    lowerRightX <- getInput("Define the x component for the lower right side of your triangle")
+    lowerRightY <- getInput("Define the y component for the lower right side of your triangle")
+  } yield Rectangle(Point(upperLeftX, upperLeftY), Point(lowerRightX, lowerRightY)))
 
-  }
+  def show(answer: Boolean) = if (answer) "Yes" else "No"
 
-  def displayMenu() = {
-    println("---Menu---")
-    println("1 - Rectangle 1 Contains Rectangle 2")
-    println("2 - Rectangle 2 Contains Rectangle 1")
-    println("3 - Rectangle 1 and Rectangle 2 Intersect")
-    println("4 - Rectangles 1 and 2 are Adjacent")
-    println("Press any other key to Exit")
-  }
-
-  def show(answer: Boolean) = if (answer) "YES" else "NO"
-
-  println("---Rectangles---")
-
-  println("Make Rectangle 1")
-  val r1 = makeRectangle()
-  println("Make Rectangle 2")
-  val r2 = makeRectangle()
-
-  displayMenu()
-
-  var option = StdIn.readInt()
-
-  while (List(1,2,3,4).contains(option)) {
+  def proccessOption(option: Int, r1: Rectangle, r2: Rectangle):ZIO[Console, IOException, Unit] = {
     option match {
-      case 1 => println(show(Rectangle.contains(r1, r2)))
-      case 2 => println(show(Rectangle.contains(r2, r1)))
-      case 3 => println(show(Rectangle.intersect(r1, r2)))
-      case 4 => println(show(Rectangle.adjacency(r1, r2)))
-      case _ => println("BYE!")
+      case 1 => putStrLn(show(Rectangle.contains(r1, r2))) *> displayMenu(r1, r2)
+      case 2 => putStrLn(show(Rectangle.contains(r2, r1))) *> displayMenu(r1, r2)
+      case 3 => putStrLn(show(Rectangle.intersect(r1, r2))) *> displayMenu(r1, r2)
+      case 4 => putStrLn(show(Rectangle.adjacency(r1, r2))) *> displayMenu(r1, r2)
+      case _ => putStrLn("BYE!")
     }
-    displayMenu()
-    option = StdIn.readInt()
   }
 
-
+  def run(args: List[String]) = (for {
+    _ <- putStrLn("---Rectangles---")
+    _ <- putStrLn("Make Rectangle #1")
+    r1 <- makeRectangle()
+    _ <- putStrLn("Make Rectangle #2")
+    r2 <- makeRectangle()
+    _ <- displayMenu(r1, r2)
+  } yield ()).run *> IO.succeed(0)
 }
