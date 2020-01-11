@@ -19,3 +19,8 @@ val commonDependencies = zioDependencies ++ testDependencies
 connectInput in run := true
 
 libraryDependencies ++= commonDependencies
+
+
+mainClass in Compile := Some("io.nuvalence.Main")
+enablePlugins(JavaAppPackaging)
+enablePlugins(DockerPlugin)

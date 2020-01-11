@@ -1,25 +1,27 @@
+package io.nuvalence
+
 import java.io.IOException
 
-import zio._
-import zio.console._
+import zio.console.{Console, getStrLn, putStrLn}
+import zio.{App, IO, ZIO}
 
 object Main extends App {
 
   private def inputNumber(number: String) = ZIO
     .effect(number.toInt)
-    .filterOrFail(_>=0)(new IOException("Invalid input"))
+    .filterOrFail(_ >= 0)(new IOException("Invalid input"))
 
   private def inputOption(number: String): ZIO[Any, NumberFormatException, Int] = ZIO
     .effect(number.toInt)
     .refineToOrDie[NumberFormatException]
 
-  private def getInput(message: String):ZIO[Console, IOException, Int] = (for {
+  private def getInput(message: String): ZIO[Console, IOException, Int] = (for {
     _ <- putStrLn(message)
     input <- getStrLn.orDie
     number <- inputNumber(input)
   } yield number) orElse (putStrLn("Invalid Input") *> getInput(message))
 
-  private def inputMenuOption(message: String):ZIO[Console, IOException, Int] = (for {
+  private def inputMenuOption(message: String): ZIO[Console, IOException, Int] = (for {
     _ <- putStrLn(message)
     input <- getStrLn.orDie
     number <- inputOption(input)
@@ -33,9 +35,9 @@ object Main extends App {
     _ <- putStrLn("4 - Rectangles 1 and 2 are Adjacent")
     option <- inputMenuOption("Press any other number to Exit")
     _ <- proccessOption(option, r1, r2)
-  } yield())
+  } yield ())
 
-  private def makeRectangle():ZIO[Console, IOException, Rectangle] =(for {
+  private def makeRectangle(): ZIO[Console, IOException, Rectangle] = (for {
     upperLeftX <- getInput("Define the x component for the upper left side of your triangle")
     upperLeftY <- getInput("Define the y component for the upper left side of your triangle")
     lowerRightX <- getInput("Define the x component for the lower right side of your triangle")
@@ -44,7 +46,7 @@ object Main extends App {
 
   def show(answer: Boolean) = if (answer) "Yes" else "No"
 
-  def proccessOption(option: Int, r1: Rectangle, r2: Rectangle):ZIO[Console, IOException, Unit] = {
+  def proccessOption(option: Int, r1: Rectangle, r2: Rectangle): ZIO[Console, IOException, Unit] = {
     option match {
       case 1 => putStrLn(show(Rectangle.contains(r1, r2))) *> displayMenu(r1, r2)
       case 2 => putStrLn(show(Rectangle.contains(r2, r1))) *> displayMenu(r1, r2)

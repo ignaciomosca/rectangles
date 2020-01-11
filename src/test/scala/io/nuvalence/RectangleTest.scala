@@ -1,3 +1,5 @@
+package io.nuvalence
+
 import org.scalatest.FunSuite
 
 class RectangleTest extends FunSuite {
