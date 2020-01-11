@@ -49,12 +49,12 @@ case class Rectangle(upperLeft: Point, lowerRight: Point) {
 object Rectangle {
 
   /**
-   * @returns true if io.nuvalence.Rectangle r2 is contained in io.nuvalence.Rectangle r1
+   * @returns true if Rectangle r2 is contained in Rectangle r1
    */
   def contains(r1: Rectangle, r2: Rectangle): Boolean = r2.points.subsetOf(r1.points)
 
   /**
-   * @returns true if io.nuvalence.Rectangle r2 is contained in io.nuvalence.Rectangle r1
+   * @returns true if Rectangle r2 is contained in Rectangle r1
    *          note: if a rectangle contains another one we consider that a special case of intersection
    *
    */

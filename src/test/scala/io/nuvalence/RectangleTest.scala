@@ -23,4 +23,15 @@ class RectangleTest extends FunSuite {
     assert(Rectangle.adjacency(r1, r2))
   }
 
+  test("Separated Rectangles") {
+    val r1 = Rectangle(Point(0, 0), Point(2, 2))
+    val r2 = Rectangle(Point(4, 4), Point(6, 6))
+    assert(!Rectangle.contains(r1, r2))
+    assert(!Rectangle.contains(r2, r1))
+    assert(!Rectangle.intersect(r1, r2))
+    assert(!Rectangle.adjacency(r1, r2))
+  }
+
+
+
 }
