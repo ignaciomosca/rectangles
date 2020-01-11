@@ -27,9 +27,9 @@ In order to make the code more interactive, I decided to create a little console
 ## Dependencies
 
 * Git
+* JDK 1.8+
 * sbt 1.3.2+
-* Scala 2.13.1
-* Docker
+* Docker (in case you want to run the code in a container)
 
 ## Instructions
 

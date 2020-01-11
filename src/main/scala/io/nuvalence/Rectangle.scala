@@ -1,18 +1,26 @@
 package io.nuvalence
 
+import io.nuvalence.AdjacencyType.AdjacencyType
+
 /**
  *
  * @param x positive value of a point in an x-axis
  * @param y positive value of a point in an y-axis
  */
-case class Point(x: Int, y: Int)
+case class Point(x: Int, y: Int) {
+  override def toString = s"($x,$y)"
+}
+
+object AdjacencyType extends Enumeration {
+  type AdjacencyType = Value
+  val Proper, Subline, Partial, None = Value
+}
 
 /**
  * @param upperLeft  upper left point of a rectangle
  * @param lowerRight lower right point of a rectangle
- * A rectangle gets represented as two points (upper left point and lower right)
- *  which would display in the following fashion:
- *
+ *                   A rectangle gets represented as two points (upper left point and lower right)
+ *                   which would display in the following fashion:
  * @upperLeft--------------------------------+
  * |                                         |
  * |                                         |
@@ -23,23 +31,23 @@ case class Point(x: Int, y: Int)
  *
  **/
 case class Rectangle(upperLeft: Point, lowerRight: Point) {
-  //Set of points of the upper side of a rectangle
-  def upperSide = (upperLeft.x to lowerRight.x).toSet
-
   //Set of points of the lower side of a rectangle
-  def lowerSide = (upperLeft.x to lowerRight.x).toSet
+  def lowerSide = (upperLeft.x to lowerRight.x).map(x => Point(x, lowerRight.y)).toSet
+
+  //Set of points of the upper side of a rectangle
+  def upperSide = (upperLeft.x to lowerRight.x).map(x => Point(x, upperLeft.y)).toSet
 
   //Set of points of the left side of a rectangle
-  def leftSide = (upperLeft.y to lowerRight.y).toSet
+  def leftSide = (lowerRight.y to upperLeft.y).map(y => Point(upperLeft.x, y)).toSet
 
   //Set of points of the right side of a rectangle
-  def rightSide = (upperLeft.y to lowerRight.y).toSet
+  def rightSide = (lowerRight.y to upperLeft.y).map(y => Point(lowerRight.x, y)).toSet
 
   //returns all the points of a rectangle
   def points: Set[Point] = {
     (for {
       x <- upperLeft.x to lowerRight.x
-      y <- upperLeft.y to lowerRight.y
+      y <- lowerRight.y to upperLeft.y
     } yield {
       Point(x, y)
     }).toSet
@@ -54,23 +62,51 @@ object Rectangle {
   def contains(r1: Rectangle, r2: Rectangle): Boolean = r2.points.subsetOf(r1.points)
 
   /**
-   * @returns true if Rectangle r2 is contained in Rectangle r1
+   * @returns true if Rectangle r1 intersects with Rectangle r2
    *          note: if a rectangle contains another one we consider that a special case of intersection
    *
    */
-  def intersect(r1: Rectangle, r2: Rectangle): Boolean = {
-    val r1Intersection = r1.points.intersect(r2.points)
-    val r2Intersection = r2.points.intersect(r1.points)
-    r1Intersection.nonEmpty || r2Intersection.nonEmpty
+  def intersect(r1: Rectangle, r2: Rectangle): Set[Point] = {
+    val r1Sides = List(r1.upperSide, r1.lowerSide, r1.leftSide, r1.rightSide)
+    val r2Sides = List(r2.upperSide, r2.lowerSide, r2.leftSide, r2.rightSide)
+    (for {
+      s1 <- r1Sides
+      s2 <- r2Sides
+    } yield s1.intersect(s2)).toSet.flatten
   }
 
   /**
    * @returns true if rectangle 1 and rectangle 2 are adjacent
    */
-  def adjacency(r1: Rectangle, r2: Rectangle): Boolean = {
-    r1.upperSide.subsetOf(r2.lowerSide) || r2.upperSide.subsetOf(r1.lowerSide) ||
-      r1.lowerSide.subsetOf(r2.upperSide) || r2.lowerSide.subsetOf(r1.upperSide) ||
-      r1.leftSide.subsetOf(r2.rightSide) || r2.leftSide.subsetOf(r1.rightSide) ||
-      r1.rightSide.subsetOf(r2.leftSide) || r2.rightSide.subsetOf(r1.leftSide)
+  def adjacency(r1: Rectangle, r2: Rectangle): AdjacencyType = {
+    val r1Sides = List(r1.upperSide, r1.lowerSide, r1.leftSide, r1.rightSide)
+    val r2Sides = List(r2.upperSide, r2.lowerSide, r2.leftSide, r2.rightSide)
+    val result = for {
+      s1 <- r1Sides
+      s2 <- r2Sides
+    } yield {
+      if (s1 == s2) {
+        AdjacencyType.Proper
+      } else if (subline(s1, s2)) {
+        AdjacencyType.Subline
+      } else if (partial(s1, s2)) {
+        AdjacencyType.Partial
+      } else {
+        AdjacencyType.None
+      }
+    }
+    result.sortBy(_.id).filterNot(_ == AdjacencyType.None).headOption.getOrElse(AdjacencyType.None)
   }
+
+  private def partial(s1: Set[Point], s2: Set[Point]): Boolean = {
+    val intersection = s1.intersect(s2)
+    if (intersection.nonEmpty) {
+      intersection.size != s1.size && intersection.size != s2.size
+    } else {
+      false
+    }
+  }
+
+  private def subline(sideA: Set[Point], sideB: Set[Point]): Boolean = (sideA.size < sideB.size && sideA.subsetOf(sideB)) || (sideB.size < sideA.size && sideB.subsetOf(sideA))
+
 }
