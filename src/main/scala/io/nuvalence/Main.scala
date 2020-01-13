@@ -3,7 +3,7 @@ package io.nuvalence
 import java.io.IOException
 
 import zio.console.{Console, getStrLn, putStrLn}
-import zio.{App, IO, ZIO}
+import zio.{App, IO, UIO, ZIO}
 
 object Main extends App {
 
@@ -56,12 +56,16 @@ object Main extends App {
     }
   }
 
+  private def validateRectangle(r: Rectangle) = if (r.points.size < 4) putStrLn("That's not a rectangle") *> makeRectangle() else {
+    UIO(r)
+  }
+
   def run(args: List[String]) = (for {
     _ <- putStrLn("---Rectangles---")
     _ <- putStrLn("Make Rectangle #1")
-    r1 <- makeRectangle()
+    r1 <- makeRectangle().flatMap(r => validateRectangle(r))
     _ <- putStrLn("Make Rectangle #2")
-    r2 <- makeRectangle()
+    r2 <- makeRectangle().flatMap(r => validateRectangle(r))
     _ <- displayMenu(r1, r2)
   } yield ()).run *> IO.succeed(0)
 }

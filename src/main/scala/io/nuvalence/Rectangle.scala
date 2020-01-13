@@ -43,6 +43,8 @@ case class Rectangle(upperLeft: Point, lowerRight: Point) {
   //Set of points of the right side of a rectangle
   def rightSide = (lowerRight.y to upperLeft.y).map(y => Point(lowerRight.x, y)).toSet
 
+  def sides = List(upperSide, lowerSide, leftSide, rightSide)
+
   //returns all the points of a rectangle
   def points: Set[Point] = {
     (for {
@@ -67,11 +69,9 @@ object Rectangle {
    *
    */
   def intersect(r1: Rectangle, r2: Rectangle): Set[Point] = {
-    val r1Sides = List(r1.upperSide, r1.lowerSide, r1.leftSide, r1.rightSide)
-    val r2Sides = List(r2.upperSide, r2.lowerSide, r2.leftSide, r2.rightSide)
     (for {
-      s1 <- r1Sides
-      s2 <- r2Sides
+      s1 <- r1.sides
+      s2 <- r2.sides
     } yield s1.intersect(s2)).toSet.flatten
   }
 
@@ -79,11 +79,9 @@ object Rectangle {
    * @returns true if rectangle 1 and rectangle 2 are adjacent
    */
   def adjacency(r1: Rectangle, r2: Rectangle): AdjacencyType = {
-    val r1Sides = List(r1.upperSide, r1.lowerSide, r1.leftSide, r1.rightSide)
-    val r2Sides = List(r2.upperSide, r2.lowerSide, r2.leftSide, r2.rightSide)
     val result = for {
-      s1 <- r1Sides
-      s2 <- r2Sides
+      s1 <- r1.sides
+      s2 <- r2.sides
     } yield {
       if (s1 == s2) {
         AdjacencyType.Proper

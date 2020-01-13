@@ -22,6 +22,8 @@ segment on a side of rectangle A exists as a set of points on some side of Recta
 
 The implementation of the following problem relies on Set theory. Basically I create set of points and perform basic operations (like `intersection` and `subsetOf`) on them.
 
+The use of pure functional programming seeks to create stable code, where illegal states are impossible to represent. For example preventing the user of creating things that are not rectangles. That way we avoid unpredictable behavior.
+
 In order to make the code more interactive, I decided to create a little console program. It uses ZIO because it's the easiest way to create reliable code that validates the inputs and structures the flow in a functional way. I tried doing it without it but writing functional code that accepts inputs from console and gets validated becomes cumbersome.
 
 ## Dependencies
